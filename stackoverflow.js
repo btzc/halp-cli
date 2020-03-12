@@ -1,9 +1,10 @@
 const axios = require('axios').default;
 
-module.exports.getAnswer = (query) => {
+module.exports.getAnswer = (query, tags) => {
   const escaped_query = escape(query);
+  const escaped_tags = escape(tags);
 
-  return axios.get(`https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q=${escaped_query}&accepted=True&site=stackoverflow&key=UMuXB0*mDGot3*ShZaCeWQ((`)
+  return axios.get(`https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q=${escaped_query}&tagged=${tags}&site=stackoverflow&key=UMuXB0*mDGot3*ShZaCeWQ((`)
     .then((res) => {
       const {question_id} = res.data.items[0];
 
@@ -18,10 +19,11 @@ module.exports.getAnswer = (query) => {
     .catch(err => console.log(err));
 }
 
-module.exports.getAllAnswers = () => {
+module.exports.getAllAnswers = (query, tags) => {
   const escaped_query = escape(query);
+  const escaped_tags = escape(tags);
 
-  return axios.get(`https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q=${escaped_query}&accepted=True&site=stackoverflow&key=UMuXB0*mDGot3*ShZaCeWQ((`)
+  return axios.get(`https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q=${escaped_query}&tagged=${tags}&site=stackoverflow&key=UMuXB0*mDGot3*ShZaCeWQ((`)
     .then((res) => {
       const { question_id } = res.data.items[0];
 
