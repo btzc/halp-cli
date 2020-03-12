@@ -16,13 +16,23 @@ const unescapeHtml = (unsafe) => {
       .replace(/&lt;/g, "<")
       .replace(/&gt;/g, ">")
       .replace(/&quot;/g, "\"")
-      .replace(/&#039;/g, "'");
+      .replace(/&#039;/g, "'")
+      .replace(/&apos;/g, "'");
 }
 
 const parseDOMTree = ($, elems, array_DOM_nodes=[], history = []) => {
   $(elems).each(function(i, elem) {
-    // console.log($(elems).next()[0] && $(elems).next()[0].name === 'pre' ? true : false);
-    if(elem.childNodes) {
+    if(elem.name === 'code' && elem.parent.name === 'pre') {
+      array_DOM_nodes.push(
+        { 
+          "prev_node": elem.parent.name,
+          "data": unescapeHtml($(elem).html())
+        }
+      );
+
+      history = [];
+    }
+    else if(elem.childNodes) {
       if (elem.name)
         history.push(elem.name === 'a' ? { 'name': elem.name, 'href': elem.attribs.href } : elem.name);
       
@@ -69,14 +79,22 @@ const formatAnswer = (answer) => {
   return dom_tree
 }
 
+const formatCode = (code) => {
+  split_code = code.split('\n');
+  return `\n\n${split_code.map(split => `    ${split}\n`).join('')}`;
+}
+
 const printAnswer = ( answer ) => {
   pretty_answer = answer.map((node) => {
-    if(node.prev_node === 'pre')
-      return highlight(`\n\n${node.data}\n`, {language: 'javascript', ignoreIllegals: true});
+    if(node.prev_node === 'pre') {
+      return highlight(`${formatCode(node.data)}`, {language: 'javascript', ignoreIllegals: true});
+    }
     else if(node.prev_node === 'a')
       return terminalLink(chalk.underline.blue(node.data), node.href);
     else if(node.prev_node === 'code')
       return chalk.yellow(node.data);
+    else if(node.prev_node === 'h2')
+      return `\n\n${chalk.bold.inverse(node.data)}\n\n`;
     else 
       return node.data;
   });
