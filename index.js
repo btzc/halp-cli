@@ -1,14 +1,10 @@
 #!/usr/bin/env node
-const chalk = require('chalk');
-const clear = require('clear');
-const clui = require('clui');
 const argv = require('yargs').argv;
+const chalk = require('chalk');
 const cheerio = require('cheerio');
 const stackoverflow = require('./stackoverflow');
+const terminalLink = require('terminal-link');
 const highlight = require('cli-highlight').highlight;
-
-console.log(argv);
-console.log(argv._.join(' '));
 
 // search: https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q=reverse%20a%20list%20in%20python&accepted=True&site=stackoverflow
 // question with id: https://api.stackexchange.com/2.2/questions/3940128/answers?order=desc&sort=votes&site=stackoverflow
@@ -23,23 +19,42 @@ const unescapeHtml = (unsafe) => {
       .replace(/&#039;/g, "'");
 }
 
-const parseDOMTree = ($, elems, array_DOM_nodes=[]) => {
+const parseDOMTree = ($, elems, array_DOM_nodes=[], history = []) => {
   $(elems).each(function(i, elem) {
+    // console.log($(elems).next()[0] && $(elems).next()[0].name === 'pre' ? true : false);
     if(elem.childNodes) {
-      parseDOMTree($, elem.childNodes, array_DOM_nodes)
+      if (elem.name)
+        history.push(elem.name === 'a' ? { 'name': elem.name, 'href': elem.attribs.href } : elem.name);
+      
+        parseDOMTree($, elem.childNodes, array_DOM_nodes, history);
+      history = [];
     } else {
-      array_DOM_nodes.push({ "prev_node": elem.parent.name, "data": elem.data.trim() });
+      if( typeof history[0] === 'object' ) {
+        array_DOM_nodes.push(
+          { 
+            "prev_node": history[0].name,
+            "data": elem.data,
+            "href": history[0].href
+          }
+        ); 
+      } else {
+        array_DOM_nodes.push(
+          { 
+            "prev_node": history[0] ? history[0] : elem.parent.name,
+            "data": elem.data
+          }
+        );
+      }
+
+      history = []
     }
   });
 
-  if(!array_DOM_nodes[array_DOM_nodes.length-1].data.includes('\n'))
-    array_DOM_nodes[array_DOM_nodes.length-1].data += '\n';
-
-    return array_DOM_nodes;
+  return array_DOM_nodes;
 }
 
 const formatAnswer = (answer) => {
-  const { body, score } = answer[0];
+  const { body } = answer[0];
 
   decoded = unescapeHtml(body);
   $ = cheerio.load(decoded);
@@ -55,16 +70,18 @@ const formatAnswer = (answer) => {
 }
 
 const printAnswer = ( answer ) => {
-  pretty_answer = answer.map(node => {
-    if(node.prev_node === 'p')
-      return node.data;
+  pretty_answer = answer.map((node) => {
+    if(node.prev_node === 'pre')
+      return highlight(`\n\n${node.data}\n`, {language: 'javascript', ignoreIllegals: true});
+    else if(node.prev_node === 'a')
+      return terminalLink(chalk.underline.blue(node.data), node.href);
     else if(node.prev_node === 'code')
-      return highlight(node.data, {language: 'python', ignoreIllegals: true});
+      return chalk.yellow(node.data);
     else 
       return node.data;
   });
 
-  console.log(pretty_answer.join(' '));
+  console.log(pretty_answer.join(''));
 }
 
 const parseAnswers = (answers) => {
@@ -78,7 +95,10 @@ const parseAnswers = (answers) => {
 }
 
 const main = () => {
-  stackoverflow.getAnswer()
+  console.log('\n');
+  const query = argv._.join(' ');
+
+  stackoverflow.getAnswer(query)
     .then((results) => {
       parseAnswers([results]);
     });
@@ -90,9 +110,3 @@ const main = () => {
 }
 
 main();
-
-  // if (argv.ship > 3) {
-  //   console.log('Plunder');
-  // } else {
-  //   console.log('Pls no');
-  // }

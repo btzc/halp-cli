@@ -1,7 +1,9 @@
 const axios = require('axios').default;
 
-module.exports.getAnswer = () => {
-  return axios.get('https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q=reverse%20a%20list%20in%20python&accepted=True&site=stackoverflow&key=UMuXB0*mDGot3*ShZaCeWQ((')
+module.exports.getAnswer = (query) => {
+  const escaped_query = escape(query);
+
+  return axios.get(`https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q=${escaped_query}&accepted=True&site=stackoverflow&key=UMuXB0*mDGot3*ShZaCeWQ((`)
     .then((res) => {
       const {question_id} = res.data.items[0];
 
@@ -17,7 +19,9 @@ module.exports.getAnswer = () => {
 }
 
 module.exports.getAllAnswers = () => {
-  return axios.get('https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q=reverse%20a%20list%20in%20python&accepted=True&site=stackoverflow&key=UMuXB0*mDGot3*ShZaCeWQ((')
+  const escaped_query = escape(query);
+
+  return axios.get(`https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=votes&q=${escaped_query}&accepted=True&site=stackoverflow&key=UMuXB0*mDGot3*ShZaCeWQ((`)
     .then((res) => {
       const { question_id } = res.data.items[0];
 
