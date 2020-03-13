@@ -1,8 +1,11 @@
 {
-  "name": "helpme-cli",
+  "name": "halp-cli",
   "version": "1.0.0",
   "description": "cli for searching stackoverflow",
   "main": "index.js",
+  "bin": {
+    "halp": "./bin/halp"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
