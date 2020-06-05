@@ -11,7 +11,7 @@ Next, `cd` into the folder where you cloned it and run
 ```
 npm install -g .
 ```
-I promise it's not malicious (probably)
+I promise it's not malicious (probably)...
 
 After that you're all set! Just invoke it from the terminal using
 ```
@@ -32,4 +32,9 @@ If that doesn't give you what you're looking for, you can try adding tags yourse
 
 ```
 halp <your query> -t <your tags>
+```
+
+Finally, if you're looking for something other than stackoverflow. Maybe you want to read a medium tutorial. You can now specify a specific source. Currently it's only limited to `stackoverflow` or `medium`. The default is `stackoverflow`.
+```
+halp <your query> -s <your source>
 ```
